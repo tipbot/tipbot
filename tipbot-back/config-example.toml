@@ -1,0 +1,8 @@
+GITHUB_ACCESS_TOKEN=" your token here"
+BOT_GITHUB_NAME="tipbot"
+DB_CONNECTION_STRING="user=postgres password=blah dbname=tipbot sslmode=disable"
+MIN_XLM_BALANCE=20
+WEBSITE_URL="http://codetip.io"
+BRIDGE_URL="http://localhost:8001"
+FEDERATION_DOMAIN="codetip.io"
+HORIZON_URL="https://horizon-testnet.stellar.org"
