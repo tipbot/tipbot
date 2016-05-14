@@ -13,8 +13,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// TODO: add a small amount of time to `since` so we won't grab the last one every time
-
 type DatabaseI interface {
 	Get(dest interface{}, query string, args ...interface{}) error
 	Exec(sql string) (sql.Result, error)
@@ -169,6 +167,7 @@ func (self *App) findMentions(issue GithubIssue, since string) {
 		}
 
 		if(parsed) {
+			lastProcessed.Add(time.Second)
 			self.database.setLastProcessed(issue.ThreadID, lastProcessed.Format(time.RFC3339))
 		}
 
