@@ -139,8 +139,9 @@ func (self *App) findMentions(issue GithubIssue, since string) {
 
 	if *hubIssue.Comments > 0 {
 		var opt *github.IssueListCommentsOptions
+		var tsince time.Time
 		if len(since) > 0 {
-			tsince, err := time.Parse(time.RFC3339, since)
+			tsince, err = time.Parse(time.RFC3339, since)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -158,7 +159,8 @@ func (self *App) findMentions(issue GithubIssue, since string) {
 		var lastProcessed github.Timestamp
 		for _, comment := range comments {
 
-			if(*comment.User.Login != self.config.BOT_GITHUB_NAME) {
+			if( (*comment.User.Login != self.config.BOT_GITHUB_NAME) &&
+			    (*comment.UpdatedAt).After(tsince)){
 				self.parseBody(issue, *comment.User.Login, *comment.Body)
 				lastProcessed.Time = *comment.UpdatedAt
 				parsed=true
