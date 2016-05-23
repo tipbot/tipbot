@@ -331,24 +331,24 @@ func (self *App) emptyAccount(issue GithubIssue, sourceUser User, destination st
 
 	err = self.bridge.SendTx(sourceUser, destination, float64(amount))
 	if err != nil {
-		self.handleSendTxError(sourceUser.GithubName,err)
+		self.handleSendTxError(issue, sourceUser.GithubName,err)
 		return
 	}
 
 	self.postReply(issue, self.EMPTY_SUCCESS(sourceUser.GithubName))
 }
 
-func (self *App) handleSendTxError(sourceName string,err error) {
-	/*
-	switch err {
-	case INVALID_ACCOUNT_ID:
-		self.postReply(issue, self.INVALID_ACCOUNT(sourceName))
-	case ADDRESS_NOT_FOUND:
+func (self *App) handleSendTxError(issue GithubIssue, sourceName string,err error) {
+
+	switch err.Error() {
+	//case "INVALID_ACCOUNT_ID:
+	//	self.postReply(issue, self.INVALID_ACCOUNT(sourceName))
+	case "404":
 		self.postReply(issue, self.ADDRESS_NOT_FOUND(sourceName))
-	case SERVER_ERROR:
+	default:
 		self.postReply(issue, self.SOMETHING_WRONG(sourceName))
 	}
-	*/
+
 }
 
 func (self *App) sendTip(issue GithubIssue, sourceUser User, assetCode string, amount float64, destination string) {
@@ -402,7 +402,7 @@ func (self *App) sendTip(issue GithubIssue, sourceUser User, assetCode string, a
 	// Create Tx
 	err = self.bridge.SendTx(sourceUser, destUser.AccountID, amount)
 	if err != nil {
-		self.handleSendTxError(sourceUser.GithubName,err)
+		self.handleSendTxError(issue,sourceUser.GithubName,err)
 		return
 	}
 	self.postReply(issue, self.REPORT_TIP(sourceUser.GithubName, destUser.GithubName))
