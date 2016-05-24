@@ -14,5 +14,5 @@ type User struct {
 }
 
 func (self *User) getMinBalance() float64 {
-	return float64(self.StellarAccount.SubentryCount) * 10
+	return float64(self.StellarAccount.SubentryCount+2) * 10
 }
