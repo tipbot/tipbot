@@ -1,7 +1,7 @@
 
 Tipbot is a simple way to tip people on github. It allows you to send lumens to anyone with a github account. It monitors comments for any mention of @tipbot.
 
-It also allows you to send directly to <github_name>*codetio.io from your Stellar wallet.
+It also allows you to send directly to <github_name>*codetip.io from your Stellar wallet.
 
 # Parts
 
