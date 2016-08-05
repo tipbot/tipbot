@@ -11,7 +11,7 @@ func (self *App) SOURCE_ACCOUNT_NOT_MADE(sourceName string) string {
 }
 
 func (self *App) NOT_ENOUGH_BALANCE(sourceName string) string {
-	return fmt.Sprintln("@" + sourceName + ", your heart is larger than your wallet! Send lumens to " + sourceName + "*" + self.config.FEDERATION_DOMAIN + " to refill")
+	return fmt.Sprintln("@" + sourceName + ", your heart is larger than your wallet! Send lumens to `" + sourceName + "*" + self.config.FEDERATION_DOMAIN + "` to refill")
 
 }
 
