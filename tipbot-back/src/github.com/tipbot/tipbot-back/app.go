@@ -54,23 +54,23 @@ func NewApp(config Config) (*App, error) {
 	client := github.NewClient(tc)
 
 	result := &App{config: config,
-		database: &database,
+		database:     &database,
 		githubClient: client,
-		bridge: &Bridge{},
-		horizon: &Horizon{}}
+		bridge:       &Bridge{},
+		horizon:      &Horizon{}}
 
 	result.bridge.setup(result)
 	result.horizon.setup(result)
-/*
-	log.Println("Loading Account")
-	_, err := result.horizon.LoadAccount("GATH47CTFPFJSPOIYR3GYDPBMQZPBKCAIBXZJSJNEBJWAIV7AUKW4LUD") // TEMP
+	/*
+		log.Println("Loading Account")
+		_, err := result.horizon.LoadAccount("GATH47CTFPFJSPOIYR3GYDPBMQZPBKCAIBXZJSJNEBJWAIV7AUKW4LUD") // TEMP
 
-	if( err != nil){
-		log.Println(err)
-	}
+		if( err != nil){
+			log.Println(err)
+		}
 
 
-	log.Fatal("Later") // TEMP
+		log.Fatal("Later") // TEMP
 	*/
 	return result, nil
 }
@@ -128,14 +128,13 @@ func (self *App) findMentions(issue GithubIssue, since string) {
 		log.Fatal(err)
 	}
 
-	log.Println(github.Stringify(issue),since)
+	log.Println(github.Stringify(issue), since)
 
 	if len(since) == 0 {
 		// This thread hasn't already been processed so we need to do the root
 		self.parseBody(issue, *hubIssue.User.Login, *hubIssue.Body)
 		self.database.setLastProcessed(issue.ThreadID, "2016-01-01T00:00:00Z")
 	}
-
 
 	if *hubIssue.Comments > 0 {
 		var opt *github.IssueListCommentsOptions
@@ -159,16 +158,16 @@ func (self *App) findMentions(issue GithubIssue, since string) {
 		var lastProcessed github.Timestamp
 		for _, comment := range comments {
 
-			if( (*comment.User.Login != self.config.BOT_GITHUB_NAME) &&
-			    (*comment.UpdatedAt).After(tsince)){
+			if (*comment.User.Login != self.config.BOT_GITHUB_NAME) &&
+				(*comment.UpdatedAt).After(tsince) {
 				self.parseBody(issue, *comment.User.Login, *comment.Body)
 				lastProcessed.Time = *comment.UpdatedAt
-				parsed=true
+				parsed = true
 			}
 
 		}
 
-		if(parsed) {
+		if parsed {
 			lastProcessed.Add(time.Second)
 			self.database.setLastProcessed(issue.ThreadID, lastProcessed.Format(time.RFC3339))
 		}
@@ -178,6 +177,9 @@ func (self *App) findMentions(issue GithubIssue, since string) {
 
 // super gross
 func (self *App) parseBody(issue GithubIssue, sourceName string, body string) {
+
+	sourceName = strings.ToLower(sourceName)
+
 	log.Println(body)
 	index := strings.Index(body, self.config.BOT_GITHUB_NAME)
 	if index >= 0 { // this comment mentions tipbot
@@ -281,7 +283,7 @@ func (self *App) parseBody(issue GithubIssue, sourceName string, body string) {
 				}
 			}
 
-			log.Println("Parsed line: ",assetCode, amount, destination)
+			log.Println("Parsed line: ", assetCode, amount, destination)
 			self.sendTip(issue, sourceUser, assetCode, amount, destination)
 
 		} else {
@@ -308,7 +310,7 @@ func (self *App) postReply(issue GithubIssue, text string) {
 	comment.Body = &text
 
 	log.Println("postReply: " + text)
-	if(self.githubClient != nil){
+	if self.githubClient != nil {
 		self.githubClient.Issues.CreateComment(issue.Owner, issue.Repo, issue.IssueNumber, &comment)
 	}
 
@@ -331,14 +333,14 @@ func (self *App) emptyAccount(issue GithubIssue, sourceUser User, destination st
 
 	err = self.bridge.SendTx(sourceUser, destination, float64(amount))
 	if err != nil {
-		self.handleSendTxError(issue, sourceUser.GithubName,err)
+		self.handleSendTxError(issue, sourceUser.GithubName, err)
 		return
 	}
 
 	self.postReply(issue, self.EMPTY_SUCCESS(sourceUser.GithubName))
 }
 
-func (self *App) handleSendTxError(issue GithubIssue, sourceName string,err error) {
+func (self *App) handleSendTxError(issue GithubIssue, sourceName string, err error) {
 
 	switch err.Error() {
 	//case "INVALID_ACCOUNT_ID:
@@ -353,6 +355,9 @@ func (self *App) handleSendTxError(issue GithubIssue, sourceName string,err erro
 
 func (self *App) sendTip(issue GithubIssue, sourceUser User, assetCode string, amount float64, destination string) {
 
+	//normalize github names
+	destination = strings.ToLower(destination)
+
 	// for now only allow XLM to be sent around
 	if assetCode != "XLM" {
 		//self.postReply(issue, self.ONLY_XLM())
@@ -366,7 +371,7 @@ func (self *App) sendTip(issue GithubIssue, sourceUser User, assetCode string, a
 
 	stellar, err := self.horizon.LoadAccount(sourceUser.AccountID)
 	if err != nil {
-		log.Print("Error Loading Account: ",sourceUser.AccountID, "  ", err)
+		log.Print("Error Loading Account: ", sourceUser.AccountID, "  ", err)
 		return
 	}
 	sourceUser.StellarAccount = stellar
@@ -386,7 +391,7 @@ func (self *App) sendTip(issue GithubIssue, sourceUser User, assetCode string, a
 	}
 	if destUser.UserID == 0 { // destination doesn't exist yet
 		if amount < self.config.MIN_XML_BALANCE {
-			self.postReply(issue, self.TIP_NOT_HIGH_ENOUGH(sourceUser.GithubName,destination))
+			self.postReply(issue, self.TIP_NOT_HIGH_ENOUGH(sourceUser.GithubName, destination))
 			return
 		}
 
@@ -402,7 +407,7 @@ func (self *App) sendTip(issue GithubIssue, sourceUser User, assetCode string, a
 	// Create Tx
 	err = self.bridge.SendTx(sourceUser, destUser.AccountID, amount)
 	if err != nil {
-		self.handleSendTxError(issue,sourceUser.GithubName,err)
+		self.handleSendTxError(issue, sourceUser.GithubName, err)
 		return
 	}
 	self.postReply(issue, self.REPORT_TIP(sourceUser.GithubName, destUser.GithubName))

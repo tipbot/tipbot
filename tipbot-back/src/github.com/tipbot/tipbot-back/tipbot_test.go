@@ -40,6 +40,7 @@ func (m *MockDatabase) setLastProcessed(threadID string, since string) error {
 	return a.Error(0)
 }
 
+
 func (m *MockDatabase) getTip(threadID string) (res string, err error) {
 	a := m.Called(threadID)
 	return a.String(0), a.Error(1)
